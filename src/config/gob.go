@@ -26,6 +26,12 @@ const (
 func (cfg *Config) Store() {
 	defer log.Trace(time.Now())
 
+	// Persist the config with its template field-set stamps: the analysis is
+	// deterministic per config content, so encoding it into the very same
+	// cache entry lets every later restore of this session skip the analysis
+	// entirely. A no-op when the config is already stamped.
+	cfg.ResolveFieldSets()
+
 	cache.Set(cache.Session, SourceKey, cfg.Source, cache.INFINITE)
 	cache.Set(cache.Session, configKey, cfg.Base64(), cache.INFINITE)
 }
@@ -45,6 +51,13 @@ func Get(configFile string, reload bool) *Config {
 	if base64String, found := cache.Get[string](cache.Session, configKey); found {
 		var cfg Config
 		if err := cfg.Restore(base64String); err == nil {
+			// A pre-stamp entry (written by an older binary) restores without
+			// field-set stamps; Store analyzes and persists them, so this one
+			// extra write upgrades the entry for the rest of the session.
+			if !cfg.FieldSetsResolved {
+				cfg.Store()
+			}
+
 			return &cfg
 		}
 
