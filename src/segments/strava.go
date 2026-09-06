@@ -131,14 +131,11 @@ func (s *Strava) getActivityIcon() string {
 		return s.options.String(RideIcon, "\uf206")
 	case "Run":
 		return s.options.String(RunIcon, "\ue213")
-	case "NordicSki":
-	case "AlpineSki":
-	case "BackcountrySki":
+	case "NordicSki", "AlpineSki", "BackcountrySki":
 		return s.options.String(SkiingIcon, "\ue213")
 	case "WorkOut":
 		return s.options.String(WorkOutIcon, "\ue213")
 	default:
 		return s.options.String(UnknownActivityIcon, "\ue213")
 	}
-	return s.options.String(UnknownActivityIcon, "\ue213")
 }
